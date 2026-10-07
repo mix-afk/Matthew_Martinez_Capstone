@@ -1,0 +1,51 @@
+feature,group,description
+rep_count,Customer x item,Times the customer bought this exact item in the last 8 weeks
+rep_days_since,Customer x item,Days since the customer last bought this item
+rep_rank,Customer x item,Recency rank of the item in the customer's history
+itemcf_score,Candidate score,Item-to-item cosine score from co-purchases
+itemcf_rank,Candidate score,Rank inside the item-CF list
+als_score,Candidate score,ALS matrix factorization score
+als_rank,Candidate score,Rank inside the ALS list
+content_score,Candidate score,Cosine similarity of item to the customer's PCA taste profile
+content_rank,Candidate score,Rank inside the content-based list
+sib_pop,Candidate score,Recent sales of another color of a product the customer bought
+sib_rank,Candidate score,Rank inside the sibling list
+pop_rank,Candidate score,Rank in last week's best sellers
+bandpop_rank,Candidate score,Rank in the best sellers of the customer's age band (last 2 weeks)
+n_sources,Candidate score,How many generators proposed the item
+ci_prodcode_count,Customer x item,Purchases of the same parent product (any color)
+ci_ptype_share,Customer x item,Share of the customer's purchases in this product type
+ci_igroup_share,Customer x item,Share of the customer's purchases in this index group
+ci_garment_share,Customer x item,Share of the customer's purchases in this garment group
+ci_colour_share,Customer x item,Share of the customer's purchases in this color family
+ci_price_ratio,Customer x item,Item average price divided by the customer's average price
+ci_age_gap,Customer x item,Gap between customer age and the item's average buyer age
+a_pop_1w,Item,Units sold last week
+a_pop_2w,Item,Units sold in the last 2 weeks
+a_pop_4w,Item,Units sold in the last 4 weeks
+a_pop_8w,Item,Units sold in the last 8 weeks
+a_trend,Item,Last week's sales vs the 4-week weekly average
+a_buyers_4w,Item,Distinct buyers in the last 4 weeks
+a_price_mean,Item,Average price paid
+a_online_share,Item,Share of units sold online
+a_buyer_age_mean,Item,Average age of the item's buyers
+a_days_since_first,Item,Days since first sale in the window (newness)
+a_days_since_last,Item,Days since last sale
+c_n_tx,Customer,Units bought in the last 8 weeks
+c_n_tx_2w,Customer,Units bought in the last 2 weeks
+c_n_articles,Customer,Distinct items bought
+c_n_weeks,Customer,Active weeks out of 8
+c_days_since_last,Customer,Days since last purchase
+c_price_mean,Customer,Average price paid
+c_online_share,Customer,Share of units bought online
+c_age,Customer,Age (median-imputed)
+c_age_missing,Customer,Age was missing
+c_fn,Customer,Gets fashion news
+c_active,Customer,Active for communication
+c_club_active,Customer,Active club member
+c_news_regular,Customer,Gets the newsletter regularly
+product_group_name,Item (categorical),Product group
+index_group_name,Item (categorical),Index group
+garment_group_name,Item (categorical),Garment group
+perceived_colour_master_name,Item (categorical),Color family
+graphical_appearance_name,Item (categorical),Print or pattern

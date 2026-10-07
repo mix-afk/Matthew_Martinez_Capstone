@@ -1,0 +1,4 @@
+feature_set,n_features,valid_map@12,valid_auc
+all features,50,0.03007475306229734,0.7655788240672757
+top 25 by mutual information + categoricals,30,0.030296278668508817,0.7639793038778431
+L1 kept + categoricals,27,0.02913772143733663,0.7565573492209986

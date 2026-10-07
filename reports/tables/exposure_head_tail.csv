@@ -1,0 +1,7 @@
+,ranker,popularity_baseline
+head_share_of_slots,0.9528988090993368,1.0
+long_tail_share_of_slots,0.0471011909006632,0.0
+long_tail_share_of_purchases,0.34096382778631557,0.34096382778631557
+distinct_items_recommended,7045.0,12.0
+coverage,0.29019236314206864,0.0004942950117395066
+exposure_gini,0.8996671509668432,0.0
