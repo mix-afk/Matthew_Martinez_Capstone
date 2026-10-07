@@ -17,16 +17,16 @@ FEATURE_DOCS = {
     "als_rank": ("Candidate score", "Rank inside the ALS list"),
     "content_score": ("Candidate score", "Cosine similarity of item to the customer's PCA taste profile"),
     "content_rank": ("Candidate score", "Rank inside the content-based list"),
-    "sib_pop": ("Candidate score", "Recent sales of another colour of a product the customer bought"),
+    "sib_pop": ("Candidate score", "Recent sales of another color of a product the customer bought"),
     "sib_rank": ("Candidate score", "Rank inside the sibling list"),
     "pop_rank": ("Candidate score", "Rank in last week's best sellers"),
     "bandpop_rank": ("Candidate score", "Rank in the best sellers of the customer's age band (last 2 weeks)"),
     "n_sources": ("Candidate score", "How many generators proposed the item"),
-    "ci_prodcode_count": ("Customer x item", "Purchases of the same parent product (any colour)"),
+    "ci_prodcode_count": ("Customer x item", "Purchases of the same parent product (any color)"),
     "ci_ptype_share": ("Customer x item", "Share of the customer's purchases in this product type"),
     "ci_igroup_share": ("Customer x item", "Share of the customer's purchases in this index group"),
     "ci_garment_share": ("Customer x item", "Share of the customer's purchases in this garment group"),
-    "ci_colour_share": ("Customer x item", "Share of the customer's purchases in this colour family"),
+    "ci_colour_share": ("Customer x item", "Share of the customer's purchases in this color family"),
     "ci_price_ratio": ("Customer x item", "Item average price divided by the customer's average price"),
     "ci_age_gap": ("Customer x item", "Gap between customer age and the item's average buyer age"),
     "a_pop_1w": ("Item", "Units sold last week"),
@@ -56,7 +56,7 @@ FEATURE_DOCS = {
     "product_group_name": ("Item (categorical)", "Product group"),
     "index_group_name": ("Item (categorical)", "Index group"),
     "garment_group_name": ("Item (categorical)", "Garment group"),
-    "perceived_colour_master_name": ("Item (categorical)", "Colour family"),
+    "perceived_colour_master_name": ("Item (categorical)", "Color family"),
     "graphical_appearance_name": ("Item (categorical)", "Print or pattern"),
 }
 
@@ -87,6 +87,22 @@ def predictability(tx: pd.DataFrame, articles: pd.DataFrame, weeks, hist_weeks: 
     return pd.DataFrame(rows)
 
 
+def predictability_by_band(tx: pd.DataFrame, customers: pd.DataFrame, articles: pd.DataFrame, weeks, hist_weeks: int) -> pd.DataFrame:
+    code = articles.set_index("article_id")["product_code"]
+    parts = []
+    for w in weeks:
+        hist = history(tx, w, hist_weeks)
+        now = tx[tx["week"] == w][["cid", "article_id"]].drop_duplicates().merge(customers[["cid", "age_band"]], on="cid")
+        seen = set(zip(hist["cid"], hist["article_id"]))
+        seen_code = set(zip(hist["cid"], hist["article_id"].map(code)))
+        now["bought_before"] = [p in seen for p in zip(now["cid"], now["article_id"])]
+        now["other_colour_before"] = [p in seen_code for p in zip(now["cid"], now["article_id"].map(code))]
+        now["has_history"] = now["cid"].isin(set(hist["cid"]))
+        parts.append(now)
+    d = pd.concat(parts)
+    return d.groupby("age_band", observed=True)[["bought_before", "other_colour_before", "has_history"]].mean().reset_index()
+
+
 def age_mix(tx: pd.DataFrame, customers: pd.DataFrame, articles: pd.DataFrame, col: str = "index_group_name") -> pd.DataFrame:
     d = tx[["cid", "article_id"]].merge(customers[["cid", "age_band"]], on="cid").merge(articles[["article_id", col]], on="article_id")
     t = pd.crosstab(d["age_band"], d[col], normalize="index")
@@ -114,12 +130,23 @@ def table_summary(cfg: dict, load_week) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+SOURCE_LABELS = {
+    "rep_rank": "Buy again",
+    "itemcf_rank": "Item-to-item CF",
+    "als_rank": "ALS",
+    "content_rank": "Content-based (PCA)",
+    "sib_rank": "Other colors",
+    "pop_rank": "Best sellers",
+    "bandpop_rank": "Age-band best sellers",
+}
+
+
 def recall_by_source(table: pd.DataFrame, actual: dict, sources: list[str]) -> pd.DataFrame:
     rows = []
     for col in sources:
         sub = table[table[col].notna()]
-        rows.append({"source": col.replace("_rank", ""), "rows": len(sub), "candidate_recall": E.candidate_recall(sub, actual)})
-    rows.append({"source": "union", "rows": len(table), "candidate_recall": E.candidate_recall(table, actual)})
+        rows.append({"source": SOURCE_LABELS.get(col, col), "rows": len(sub), "candidate_recall": E.candidate_recall(sub, actual)})
+    rows.append({"source": "All combined", "rows": len(table), "candidate_recall": E.candidate_recall(table, actual)})
     return pd.DataFrame(rows)
 
 

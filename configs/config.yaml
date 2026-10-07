@@ -47,8 +47,9 @@ fairness:
   age_labels: ["16-24", "25-34", "35-44", "45-54", "55+"]
   long_tail_quantile: 0.8
   di_threshold: 0.8
+  min_group_size: 100
 
 ranker:
-  tuning_trials: 10
-  early_stopping_rounds: 50
-  max_rounds: 1000
+  tuning_trials: 8
+  early_stopping_rounds: 30
+  max_rounds: 500

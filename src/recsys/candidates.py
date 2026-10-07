@@ -49,7 +49,7 @@ def repurchase(hist: pd.DataFrame, cids: np.ndarray, max_n: int, ref_date: pd.Ti
 
 
 def product_siblings(hist: pd.DataFrame, cids: np.ndarray, articles: pd.DataFrame, n: int) -> pd.DataFrame:
-    """Other colours/variants of products the customer already bought (same product_code)."""
+    """Other colors/variants of products the customer already bought (same product_code)."""
     recent = hist[hist["week"] <= hist["week"].min() + 1]
     sold = recent["article_id"].value_counts().rename("sib_pop").reset_index()
     code = articles[["article_id", "product_code"]]

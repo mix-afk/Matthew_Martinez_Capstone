@@ -17,6 +17,15 @@ from .config import ensure_dirs, load_config, set_seed
 from .data import load_dataset
 from .features import ARTICLE_CAT_FEATURES, SENSITIVE_FEATURES, build_week_table, feature_columns
 
+SOURCE_NAMES = {
+    "popularity": "Best sellers",
+    "age_band_popularity": "Age-band best sellers",
+    "repurchase": "Buy again",
+    "item_cf": "Item-to-item CF",
+    "als": "ALS matrix factorization",
+    "content": "Content-based (PCA)",
+    "product_siblings": "Other colors",
+}
 MODEL_NAMES = {"logreg": "Logistic regression", "lgbm_classifier": "LightGBM classifier", "lgbm_ranker": "LightGBM LambdaRank"}
 
 
@@ -155,7 +164,7 @@ def evaluate_test(cfg, trained: dict) -> pd.DataFrame:
     rows = []
     for name, pred in tx["per_source"].items():
         m = E.summarize(tx["actual"], pred, k, fallback=tx["popular"], n_catalog=n_catalog)
-        rows.append({"stage": "1 candidate", "model": name, **m})
+        rows.append({"stage": "1 candidate", "model": SOURCE_NAMES.get(name, name), **m})
     for name, model in trained["models"].items():
         s = R.predict(model, test, trained["cols"], trained["cats"])
         d = test[["cid", "article_id"]].copy()
@@ -204,6 +213,7 @@ def rounds_curve(cfg, trained: dict, rounds: list[int]) -> pd.DataFrame:
     from .features import to_model_frame
 
     model = trained["models"]["lgbm_classifier"]
+    rounds = [n for n in rounds if n <= model.booster_.num_trees()]
     rows = []
     for split, w in (("valid", cfg["weeks"]["valid"]), ("test", cfg["weeks"]["test"])):
         t, x = load_week(cfg, w)

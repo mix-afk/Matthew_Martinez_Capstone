@@ -36,7 +36,8 @@ def variance_filter(x: pd.DataFrame, threshold: float = 1e-4) -> list[str]:
 
 def mutual_information(x: pd.DataFrame, y: pd.Series, seed: int) -> pd.DataFrame:
     xi = x.fillna(-1)
-    mi = mutual_info_classif(xi, y, random_state=seed, n_neighbors=3)
+    discrete = [xi[c].nunique() <= 10 for c in xi.columns]
+    mi = mutual_info_classif(xi, y, discrete_features=discrete, random_state=seed, n_neighbors=3)
     return pd.DataFrame({"feature": x.columns, "mutual_info": mi}).sort_values("mutual_info", ascending=False).reset_index(drop=True)
 
 
