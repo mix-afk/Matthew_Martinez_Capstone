@@ -1,0 +1,54 @@
+seed: 42
+
+paths:
+  raw: data/raw
+  processed: data/processed
+  serving: data/processed/serving
+  models: models
+  figures: reports/figures
+  tables: reports/tables
+  mlflow: mlruns
+
+sample:
+  start_date: "2020-06-24"
+  end_date: "2020-09-22"
+  # customer_id is a hex hash, so its last two characters are uniform over 00..ff.
+  # Keeping buckets 00..33 (52 of 256) gives a fixed, reproducible ~20% customer sample.
+  customer_hex_buckets: 52
+
+weeks:
+  # week 0 = 2020-09-16..2020-09-22 (the last week in the data)
+  test: 0
+  valid: 1
+  train: [2, 3, 4]
+  history_weeks: 8
+
+candidates:
+  popular_n: 36
+  age_band_popular_n: 12
+  repurchase_max: 20
+  itemcf_n: 20
+  itemcf_neighbors: 50
+  als_n: 20
+  als_factors: 64
+  als_regularization: 0.05
+  als_iterations: 20
+  als_alpha: 10.0
+  content_n: 20
+  content_pool: 3000
+  content_pca_components: 24
+  siblings_n: 12
+
+eval:
+  k: 12
+
+fairness:
+  age_bins: [16, 25, 35, 45, 55, 100]
+  age_labels: ["16-24", "25-34", "35-44", "45-54", "55+"]
+  long_tail_quantile: 0.8
+  di_threshold: 0.8
+
+ranker:
+  tuning_trials: 10
+  early_stopping_rounds: 50
+  max_rounds: 1000

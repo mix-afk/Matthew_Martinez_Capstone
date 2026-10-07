@@ -1,0 +1,22 @@
+# Data (H&M competition data cannot be redistributed)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Tracking and caches
+mlruns/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Secrets and local env
+.env
+.venv/
+venv/
+.DS_Store
