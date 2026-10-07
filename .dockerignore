@@ -1,0 +1,8 @@
+data/raw
+data/processed/tables
+mlruns
+notebooks
+reports
+.git
+.venv
+__pycache__

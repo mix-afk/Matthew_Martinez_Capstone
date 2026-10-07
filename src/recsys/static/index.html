@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>You May Also Like</title>
+<style>
+:root {
+  --bg: #f7f6f2; --card: #ffffff; --ink: #191717; --muted: #6b6a66; --line: #e6e5e0;
+  --accent: #7b3fb0; --hit: #0f7a43; --hit-bg: #e6f4ec;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Helvetica Neue", Arial, sans-serif; background: var(--bg); color: var(--ink); }
+header { padding: 20px 24px 12px; border-bottom: 1px solid var(--line); background: var(--card); display: flex; flex-wrap: wrap; gap: 12px; align-items: end; justify-content: space-between; }
+h1 { margin: 0; font-size: 22px; letter-spacing: -0.01em; font-weight: 600; }
+.sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+select, input, button { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); }
+input { width: 220px; }
+button { cursor: pointer; background: var(--ink); color: #fff; border-color: var(--ink); }
+label.toggle { font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+main { padding: 20px 24px 40px; max-width: 1280px; margin: 0 auto; }
+h2 { font-size: 15px; font-weight: 600; margin: 22px 0 10px; display: flex; gap: 10px; align-items: baseline; }
+h2 .meta { color: var(--muted); font-weight: 400; font-size: 13px; }
+.row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+.mini { min-width: 150px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px; font-size: 12px; }
+.mini .sw { height: 36px; border-radius: 6px; margin-bottom: 6px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform .12s ease, box-shadow .12s ease; position: relative; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.07); }
+.sw { height: 110px; display: flex; align-items: end; padding: 8px; color: rgba(255,255,255,.92); font-size: 12px; letter-spacing: .02em; }
+.sw.light { color: rgba(0,0,0,.6); }
+.body { padding: 10px 12px 12px; }
+.name { font-weight: 600; font-size: 14px; line-height: 1.25; }
+.type { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.reason { margin-top: 8px; font-size: 12.5px; color: var(--accent); line-height: 1.35; }
+.rank { position: absolute; top: 8px; left: 8px; background: rgba(255,255,255,.9); color: var(--ink); border-radius: 999px; font-size: 11px; padding: 2px 8px; }
+.hit { position: absolute; top: 8px; right: 8px; background: var(--hit-bg); color: var(--hit); border-radius: 999px; font-size: 11px; padding: 2px 8px; font-weight: 600; }
+.stats { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 6px; font-size: 13px; color: var(--muted); }
+.stats b { color: var(--ink); font-weight: 600; }
+aside { position: fixed; right: 0; top: 0; bottom: 0; width: min(380px, 100%); background: var(--card); border-left: 1px solid var(--line); padding: 18px; overflow-y: auto; transform: translateX(100%); transition: transform .2s ease; box-shadow: -8px 0 24px rgba(0,0,0,.06); }
+aside.open { transform: translateX(0); }
+aside .close { float: right; background: none; color: var(--muted); border: none; font-size: 20px; }
+.empty { color: var(--muted); font-size: 14px; padding: 20px 0; }
+footer { color: var(--muted); font-size: 12px; padding: 0 24px 24px; max-width: 1280px; margin: 0 auto; }
+@media (max-width: 600px) { header, main { padding-left: 16px; padding-right: 16px; } input { width: 100%; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>You may also like</h1>
+    <div class="sub">Two-stage recommender demo on H&amp;M data. Recommendations use data up to <span id="asof">15 Sep 2020</span>.</div>
+  </div>
+  <div class="controls">
+    <select id="demo" aria-label="Demo customers"></select>
+    <input id="cid" placeholder="or paste a customer_id">
+    <button id="go">Recommend</button>
+    <label class="toggle"><input type="checkbox" id="llm" style="width:auto"> AI reasons</label>
+  </div>
+</header>
+<main>
+  <div class="stats" id="stats"></div>
+  <h2>Recently bought <span class="meta">last 8 weeks</span></h2>
+  <div class="row" id="history"></div>
+  <h2>Recommended for you <span class="meta" id="strategy"></span></h2>
+  <div class="grid" id="grid"><div class="empty">Pick a customer to see their top 12.</div></div>
+</main>
+<aside id="panel"><button class="close" id="close" aria-label="Close">×</button><div id="panelBody"></div></aside>
+<footer>Green badge = the customer really bought that item in the following week (16 to 22 Sep 2020), which the model never saw.</footer>
+<script>
+const COLOURS = {"Black":"#1f1f1f","White":"#f2f1ec","Beige":"#d8c6a5","Grey":"#9b9b98","Blue":"#3f6fb5","Pink":"#e9a3b8","Lilac Purple":"#a98bc9","Red":"#c8393b","Mole":"#8a7b6e","Orange":"#e78a3b","Metal":"#b7b9bd","Brown":"#7a5233","Turquoise":"#2fa7a3","Yellow":"#ecc94b","Khaki green":"#7d7c4f","Green":"#4c8a4f","Yellowish Green":"#b6c74a","Bluish Green":"#3f8f84","undefined":"#cfcfcf","Unknown":"#cfcfcf"};
+const LIGHT = new Set(["White","Beige","Yellow","Metal","undefined","Unknown","Pink","Yellowish Green"]);
+const $ = id => document.getElementById(id);
+const sw = (a, cls="sw") => { const c = COLOURS[a.colour_family] || "#cfcfcf"; return `<div class="${cls}${LIGHT.has(a.colour_family) ? " light" : ""}" style="background:${c}">${a.colour || ""}</div>`; };
+const esc = s => String(s ?? "").replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+
+async function loadDemo() {
+  const ids = await (await fetch("/customers/demo")).json();
+  $("demo").innerHTML = ids.map((id, i) => `<option value="${id}">Demo customer ${i + 1}</option>`).join("") + `<option value="new-shopper">New shopper (cold start)</option>`;
+  const h = await (await fetch("/health")).json();
+  if (h.as_of) $("asof").textContent = new Date(h.as_of).toLocaleDateString("en-US", {day: "numeric", month: "short", year: "numeric"});
+  recommend(ids[0]);
+}
+
+async function recommend(id) {
+  const explain = $("llm").checked ? "llm" : "template";
+  $("grid").innerHTML = `<div class="empty">Loading…</div>`;
+  const res = await fetch(`/recommendations/${encodeURIComponent(id)}?explain=${explain}`);
+  const d = await res.json();
+  const hits = d.items.filter(x => x.bought_next_week).length;
+  $("strategy").textContent = d.strategy === "cold_start_popular" ? "no history: best sellers" : "candidates + LightGBM ranker";
+  $("stats").innerHTML = `<span>Customer <b>${esc(id.slice(0, 10))}…</b></span><span>Past items <b>${d.history.length}</b></span><span>Bought next week <b>${hits} of ${d.items.length}</b></span>`;
+  $("history").innerHTML = d.history.length ? d.history.map(a => `<div class="mini">${sw(a)}<div class="name">${esc(a.name)}</div><div class="type">${esc(a.type)}</div></div>`).join("") : `<div class="empty">No purchases in the last 8 weeks.</div>`;
+  $("grid").innerHTML = d.items.map(a => `
+    <div class="card" data-id="${a.article_id}">
+      ${sw(a)}<span class="rank">#${a.rank}</span>${a.bought_next_week ? `<span class="hit">✓ Bought next week</span>` : ""}
+      <div class="body"><div class="name">${esc(a.name)}</div><div class="type">${esc(a.type)} · ${esc(a.index_group)}</div>
+      <div class="reason">${esc(a.reason)}</div></div>
+    </div>`).join("");
+  document.querySelectorAll(".card").forEach(c => c.addEventListener("click", () => similar(c.dataset.id)));
+}
+
+async function similar(articleId) {
+  const res = await fetch(`/similar/${articleId}`);
+  const body = $("panelBody");
+  if (!res.ok) { body.innerHTML = `<h2>Bought together</h2><div class="empty">Not enough co-purchases for this item yet.</div>`; $("panel").classList.add("open"); return; }
+  const d = await res.json();
+  body.innerHTML = `<h2>Bought together with</h2><div class="mini" style="margin-bottom:12px">${sw(d.article)}<div class="name">${esc(d.article.name)}</div><div class="type">${esc(d.article.description)}</div></div>` +
+    d.similar.map(a => `<div class="mini" style="margin-bottom:8px">${sw(a)}<div class="name">${esc(a.name)}</div><div class="type">${esc(a.type)} · similarity ${a.score.toFixed(2)}</div></div>`).join("");
+  $("panel").classList.add("open");
+}
+
+$("go").addEventListener("click", () => recommend($("cid").value.trim() || $("demo").value));
+$("demo").addEventListener("change", e => { $("cid").value = ""; recommend(e.target.value); });
+$("llm").addEventListener("change", () => recommend($("cid").value.trim() || $("demo").value));
+$("close").addEventListener("click", () => $("panel").classList.remove("open"));
+loadDemo();
+</script>
+</body>
+</html>
